@@ -1,0 +1,32 @@
+#!/bin/bash
+# Export Diffusion Metrics (FA, MD, RD, AD) from src.gz files
+# Daniel Elbich
+# The Pennsylvania State University
+# 7/15/17
+#
+#
+# Note: Assumes all fiber tracks (*.fib.gz extension) are in single file
+#
+
+# Change directory
+cd /storage/home/dbe5007/Neelylab/Imaging_Projects/DSI_Studio/DTI_Reconstruction/
+cd /path/to/data
+
+# List all src.gz files
+subs=$(ls *.fib.gz)
+
+#Atlas Name
+atlas=aal
+
+for sub in $subs
+do
+
+/path/to/install/dsi_studio --action=exp --source=${sub} --atlas=$atlas --export=${sub}_$atlas_stats
+
+
+echo
+done
+
+
+
+
