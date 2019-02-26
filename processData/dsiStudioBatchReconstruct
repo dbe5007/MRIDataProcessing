@@ -75,7 +75,8 @@ case "$method" in
    output_mapping="1"        # Output mapping for each voxel
    output_jac="1";;          # Output jacobian determinant
 
-#start=`date +%s`
+# DSI Studio install path
+dsiPath=/
 
 for sub in $subs
 do
@@ -83,7 +84,7 @@ do
 case "$method" in
 
 #DTI Reconstruction
-1) /path/to/dsiStudio/install/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --motion_correction=${motion_correction} --output_dif=${output_dif} --output_tensor=${output_tensor} --reg_method=1;;
+1) /path/to/dsiStudio/install/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --motion_correction=${motion_correction} --output_dif=${output_dif} --output_tensor=${output_tensor};;
 
 #GQI Reconstruction
 4) path/to/dsiStudio/install/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --param0=${param0} --param1=${voxel_res} --record_odf=${record_odf} --reg_method=4;;
