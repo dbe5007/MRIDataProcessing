@@ -1,9 +1,4 @@
 Summary
 -----------
-Various scripts for structural MRI data processing & analyses
+Various scripts for MRI data processing & analyses. Scripts are separated by program specific directories. Each folder will be updated with a README in next update.
 
-Each folder contains shell scripts rename/recode, preprocess, or export values from diffusion/MPRAGE MRI data.
-
-.. code:: sh
-
-  TBD
