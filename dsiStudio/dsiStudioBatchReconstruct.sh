@@ -9,7 +9,7 @@ echo "Created: 2/26/19"
 echo ""
 echo ""
 echo "Usage:"
-echo "sh batchReconstruct --subj <text> --method <number>"
+echo "sh dsiStudioBatchReconstruct.sh --subj <text> --method <number>"
 echo ""
 echo " Required arguments:"
 echo ""
@@ -25,7 +25,7 @@ exit 1
 #method=7          # 0:DSI, 1:DTI, 2:Funk-Randon QBI, 3:Spherical Harmonic QBI, 4:GQI 6: Convert to HARDI 7:QSDR
 
 
-#Arguement check
+#Argument check
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
