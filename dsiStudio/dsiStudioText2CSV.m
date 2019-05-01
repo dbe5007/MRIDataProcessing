@@ -52,7 +52,7 @@ file = fopen([regions{x,1} '.csv'], 'w');
 for a=1:size(final.(regions{x,1}),1)
     for b=1:size(final.(regions{x,1}),2)
 
-        var = eval(['final.(regions{x,1})']);
+        var = eval(['final.(regions{x,1}){a,b}']);
 
         fprintf(file, '%s', var);
         fprintf(file, ' ');
