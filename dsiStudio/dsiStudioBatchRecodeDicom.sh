@@ -9,8 +9,11 @@ echo "The Pennsylvania State University"
 echo "Created: 7/13/17"
 echo ""
 echo ""
-echo " Batch rename DICOM files for set of subjects. Copys raw data folder and"
-echo " and renames copied files instead of altering original raw data folder."
+echo " Batch rename DICOM files for set of subjects. Copies raw data folder and"
+echo " and renames copied files."
+echo ""
+echo " WARNING: DSI Studio 'rename' command overwrites data. Running on copied "
+echo " folder protects integrity of raw data files!"
 echo ""
 echo "Usage:"
 echo "sh dsiStudioBatchRecodeDicom.sh"
@@ -20,6 +23,8 @@ exit 1
 }
 [ "$1" = "--help" ] && help
 
+## DSI Studio install path ##
+dsiPath=/path/to/dsiStudio/install
 
 #Subject List - list subject IDs with hard return after each
 #subjlist=(AA_123
@@ -44,7 +49,7 @@ folderID=${folderlist[$i]}
 
 cp /path/to/$subjID/$folderID /path/to/$subjID/$folderID"_dsi_renamed"
 
-/path/to/install/dsi_studio --action=ren --source=/path/to/$subjID/$folderID"_dsi_renamed"
+$dsiPath/dsi_studio --action=ren --source=/path/to/$subjID/$folderID"_dsi_renamed"
 
 done
 
