@@ -9,14 +9,16 @@ echo "The Pennsylvania State University"
 echo "7/15/17"
 echo ""
 echo ""
-echo "Note: Assumes all fiber tracks (*.fib.gz extension) are in single file"
+echo "Note: Assumes all fiber tracks (*.fib.gz extension) are in single folder"
 echo ""
 echo "Usage:"
-echo "sh dsiStudioExportAtlas.sh --subj <text>"
+echo "sh dsiStudioExportAtlas.sh --subj <text> --atlas <text>"
 echo ""
 echo " Required arguments:"
 echo ""
 echo "        --subj            Subject ID"
+echo "        --atlas           Atlas name (e.g. aal; see DSI Studio atlas "
+echo "                                               folder for exact name)"
 echo ""
 exit 1
 }
@@ -34,6 +36,10 @@ case $key in
 shift # past argument
 shift # past value
 ;;
+--atlas) atlas="$2"
+shift # past argument
+shift # past value
+;;
 *)    # unknown option
 POSITIONAL+=("$1") # save it in an array for later
 shift # past argument
@@ -48,13 +54,10 @@ cd /path/to/$subj/data
 # List all fib.gz files
 subs=$(ls *.fib.gz)
 
-#Example atlas name - see DSI Studio install for complete list of available atlases
-atlas="aal"
-
 for sub in $subs
 do
 
-/path/to/install/dsi_studio --action=exp --source=${sub} --atlas=${atlas} --export=${sub}"_"${atlas}"_stats"
+/path/to/install/dsi_studio --action=ana --source=$sub --atlas=$atlas
 
 
 echo
