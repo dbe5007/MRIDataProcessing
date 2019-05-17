@@ -18,4 +18,5 @@ Scripts for processing & manipulating data in DSI Studio
         Subject ID and atlas name are required flags
 
 ```dsiStudioText2CSV.m```
-	
+	Reads in text files saved from DSI Studio ROI information export
+	Concatenates into single CSV for human-readable computation & manipulation
