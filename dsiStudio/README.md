@@ -1,6 +1,8 @@
 # Summary
------------
 Scripts for processing & manipulating data in DSI Studio 
+
+```createBfilesFromBtable.m```
+	Creates separate bvec and bval files from single b-table saved from DSI Studio
 
 ```dsiStudioBatchRecodeDicom.sh```
 	Recode subject DICOM files by sequence. Required if program cannot read raw data (e.g. extension is .v2 DICOM)
@@ -15,3 +17,5 @@ Scripts for processing & manipulating data in DSI Studio
 	Check DSI Studio install for case-sensitive atlas name
         Subject ID and atlas name are required flags
 
+```dsiStudioText2CSV.m```
+	
