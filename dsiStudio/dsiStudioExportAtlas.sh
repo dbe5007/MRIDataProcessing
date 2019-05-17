@@ -3,7 +3,7 @@
 ####Notes & Comments####
 help() {
 echo ""
-echo "Export Diffusion Metrics (FA, MD, RD, AD) from src.gz files"
+echo "Export Diffusion Metrics (FA, MD, RD, AD) from fib.gz files"
 echo "Daniel Elbich"
 echo "The Pennsylvania State University"
 echo "7/15/17"
@@ -24,7 +24,7 @@ exit 1
 }
 [ "$1" = "--help" ] && help
 
-#Argument check
+## Argument check ##
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
@@ -48,21 +48,22 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-# Change directory
+## DSI Studio install path ##
+dsiPath=/path/to/dsiStudio/install
+
+## Change directory ##
 cd /path/to/$subj/data
 
-# List all fib.gz files
+## List all fib.gz files ##
 subs=$(ls *.fib.gz)
 
 for sub in $subs
 do
 
-/path/to/install/dsi_studio --action=ana --source=$sub --atlas=$atlas
+$dsiPath/dsi_studio --action=ana --source=$sub --atlas=$atlas
 
 
 echo
 done
-
-
 
 
