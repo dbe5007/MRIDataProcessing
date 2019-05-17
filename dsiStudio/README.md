@@ -1,4 +1,4 @@
-Summary
+# Summary
 -----------
 Scripts for processing & manipulating data in DSI Studio 
 
@@ -14,5 +14,4 @@ Scripts for processing & manipulating data in DSI Studio
 	Exports diffusion metrics for regions within a given atlas
 	Check DSI Studio install for case-sensitive atlas name
         Subject ID and atlas name are required flags
-
 
