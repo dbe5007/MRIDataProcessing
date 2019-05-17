@@ -21,9 +21,6 @@ exit 1
 }
 [ "$1" = "--help" ] && help
 
-# Set Reconstruction Parameters
-#method=7          # 0:DSI, 1:DTI, 2:Funk-Randon QBI, 3:Spherical Harmonic QBI, 4:GQI 6: Convert to HARDI 7:QSDR
-
 
 #Argument check
 POSITIONAL=()
@@ -52,10 +49,10 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 cd $subj
 
-# List all src.gz files
+## List all src.gz files ##
 subs=$(ls *.src.gz)
 
-# Reconstruction Parameters
+## Reconstruction Parameters ##
 #method=7          # 0:DSI, 1:DTI, 2:Funk-Randon QBI, 3:Spherical Harmonic QBI, 4:GQI 6: Convert to HARDI 7:QSDR
 
 
@@ -75,8 +72,8 @@ case "$method" in
    output_mapping="1"        # Output mapping for each voxel
    output_jac="1";;          # Output jacobian determinant
 
-# DSI Studio install path
-dsiPath=/
+## DSI Studio install path ##
+dsiPath=/path/to/dsiStudio/install
 
 for sub in $subs
 do
@@ -84,13 +81,13 @@ do
 case "$method" in
 
 #DTI Reconstruction
-1) /path/to/dsiStudio/install/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --motion_correction=${motion_correction} --output_dif=${output_dif} --output_tensor=${output_tensor};;
+1) $dsiPath/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --motion_correction=${motion_correction} --output_dif=${output_dif} --output_tensor=${output_tensor};;
 
 #GQI Reconstruction
-4) path/to/dsiStudio/install/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --param0=${param0} --param1=${voxel_res} --record_odf=${record_odf} --reg_method=4;;
+4) $dsiPath/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --param0=${param0} --param1=${voxel_res} --record_odf=${record_odf} --reg_method=4;;
 
 #QSDR Reconstruction
-7) /path/to/dsiStudio/install/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --param0=${param0} --param1=${voxel_res} --output_jac=1 --output_mapping=1 --record_odf=${record_odf} --reg_method=4;;
+7) $dsiPath/dsi_studio --action=rec --thread=${thread} --source=${sub} --method=${method} --param0=${param0} --param1=${voxel_res} --output_jac=${output_jac} --output_mapping=${output_mapping} --record_odf=${record_odf} --reg_method=4;;
 
 
 done
