@@ -89,71 +89,57 @@ for csub = subjects % for each subject...
     % Create separate directories for each run - set for 4 runs, each a
     % 4D nifti image - change as needed
     !mkdir -p $processDir/$subject/func/{run1,run2,run3,run4}
-    !mv $processDir/$subject/func/$subject"_task-mp_run-1"* $processDir/$subject/func/run1
-    !mv $processDir/$subject/func/$subject"_task-mp_run-2"* $processDir/$subject/func/run2
-    !mv $processDir/$subject/func/$subject"_task-mp_run-3"* $processDir/$subject/func/run3
-    !mv $processDir/$subject/func/$subject"_task-mp_run-4"* $processDir/$subject/func/run4
+    !mv $processDir/$subject/func/*run-1* $processDir/$subject/func/run1
+    !mv $processDir/$subject/func/*run-2* $processDir/$subject/func/run2
+    !mv $processDir/$subject/func/*run-3* $processDir/$subject/func/run3
+    !mv $processDir/$subject/func/*run-4* $processDir/$subject/func/run4
     
     % Create the path to this subjects' functional folder
     subjectFuncFolder = fullfile(directories.func, csub{:}, 'func');
     
     % Select run folders
     runs = cellstr(spm_select...
-        ('FPList', subjectFuncFolder, 'dir', wildcards.runs));
+        ('FPList', subject_funcfolder, 'dir', wildcards.runs));
     
-    % Set batch parameters
-    for currentRun = 1:length(runs)
+    
+    %% Defining Session Parameters
+    
+    % Tag each file of 4D nifti images for each run
+    for crun = 1:length(runs)
         
-        % Path to the current run folder
-        crun_folder  = runs{currentRun};
-        
-        % Collect paths to ALL .nii images in this folder
-        images{currentRun} = cellstr(spm_select...
-            ('ExtFPList', crun_folder, wildcards.func, Inf));
-        
-        matlabbatch{2}.spm.temporal.st.scans{currentRun}(1) = cfg_dep(...
-            ['Realign: Estimate & Reslice: Resliced Images (Sess ' ...
-            num2str(currentRun) ')'], substruct('.','val', '{}',{1}, '.',...
-            'val','{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}),...
-            substruct('.','sess', '()',{currentRun}, '.','cfiles'));
-        
-        matlabbatch{5}.spm.spatial.normalise.write.subj.resample(currentRun)...
-            = cfg_dep(['Slice Timing: Slice Timing Corr. Images (Sess ' ...
-            num2str(currentRun) ')'], substruct('.','val', '{}',{2}, '.',...
-            'val','{}',{1}, '.','val', '{}',{1}), substruct('()',...
-            {currentRun}, '.','files'));
+        crun_folder  = runs{crun}; % path to the current run folder
+        images.raw{crun} = cellstr(spm_select...
+            ('ExtFPList', crun_folder, wildcards.func, Inf)); % collect paths to ALL .nii images in this folder
         
     end
     
-    % Paths to all images to realign for this run
-    matlabbatch{1}.spm.spatial.realign.estwrite.data = images;
-    
-    %% Defining Session Independent Parameters
-    
     % Set number of preprocessing parameters
-    params = 6;
+    params = 7;
+    matlabbatch=cell(1,7);
     
     for i=1:params
-        
         switch i
             case 1
                 % Run Independent Realightment Parameters
-                %i=1;
+                matlabbatch{i}.spm.spatial.realign.estwrite.data = images.raw; % Paths to all images to realign for this run
                 matlabbatch{i}.spm.spatial.realign.estwrite.eoptions.quality = 0.9;
                 matlabbatch{i}.spm.spatial.realign.estwrite.eoptions.sep     = 4;
                 matlabbatch{i}.spm.spatial.realign.estwrite.eoptions.fwhm    = 5;
-                matlabbatch{i}.spm.spatial.realign.estwrite.eoptions.rtm     = 1;
+                matlabbatch{i}.spm.spatial.realign.estwrite.eoptions.rtm     = 1; % Register to mean of the image
                 matlabbatch{i}.spm.spatial.realign.estwrite.eoptions.interp  = 2;
                 matlabbatch{i}.spm.spatial.realign.estwrite.eoptions.wrap    = [0 0 0];
                 matlabbatch{i}.spm.spatial.realign.estwrite.eoptions.weight  = '';
-                matlabbatch{i}.spm.spatial.realign.estwrite.roptions.which   = [0 1];
+                matlabbatch{i}.spm.spatial.realign.estwrite.roptions.which   = [2 1]; % Create resliced images of all runs and mean
                 matlabbatch{i}.spm.spatial.realign.estwrite.roptions.interp  = 4;
                 matlabbatch{i}.spm.spatial.realign.estwrite.roptions.wrap    = [0 0 0];
                 matlabbatch{i}.spm.spatial.realign.estwrite.roptions.mask    = 1;
                 matlabbatch{i}.spm.spatial.realign.estwrite.roptions.prefix  = 'r';
             case 2
                 % Run Independent Slicetiming Parameters
-                %i=2;
+                for a=1:length(runs)
+                    images.reslice{1,a} = strrep(images.raw{1,a},[csub{:} '_task'],...
+                        ['r' csub{:} '_task']);
+                end
                 matlabbatch{i}.spm.temporal.st.nslices  = 58;
                 matlabbatch{i}.spm.temporal.st.tr       = 2.5;
                 matlabbatch{i}.spm.temporal.st.ta       = 2.5-(2.5/58);
@@ -162,47 +148,46 @@ for csub = subjects % for each subject...
                 matlabbatch{i}.spm.temporal.st.so       = [1:2:58 2:2:58];
                 matlabbatch{i}.spm.temporal.st.refslice = 2;
                 matlabbatch{i}.spm.temporal.st.prefix   = 'a';
+                
             case 3
-                % Run Independent Coregistration Parameters
-                %i=3;
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1) = cfg_dep;
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1).tname = 'Reference Image';
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1).tgt_spec{1}(1).name  = 'filter';
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1).tgt_spec{1}(1).value = 'image';
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1).tgt_spec{1}(2).name  = 'strtype';
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1).tgt_spec{1}(2).value = 'e';
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1).sname = 'Realign: Estimate & Reslice: Mean Image';
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1).src_exbranch = ...
-                    substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.',...
-                    'val', '{}',{1}, '.','val', '{}',{1});
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1).src_output   = ...
-                    substruct('.','rmean');
-                
-                % Inputting Subject's Anatomical Information
-                anat_directory = fullfile(directories.anat, csub{:}, 'anat');
-                matlabbatch{i}.spm.spatial.coreg.estimate.source = ...
-                    {spm_select('ExtFPListRec', anat_directory, wildcards.anat)};
-                
-                % More Run Independent Coregistartion Parameters
-                matlabbatch{i}.spm.spatial.coreg.estimate.ref(1) = cfg_dep...
-                    ('Realign: Estimate & Reslice: Mean Image', substruct...
-                    ('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',...
-                    {1}, '.','val', '{}',{1}), substruct('.','rmean'));
-                matlabbatch{i}.spm.spatial.coreg.estimate.other  = {''};
-                matlabbatch{i}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
-                matlabbatch{i}.spm.spatial.coreg.estimate.eoptions.sep      = [4 2];
-                matlabbatch{i}.spm.spatial.coreg.estimate.eoptions.tol      = ...
-                    [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
-                matlabbatch{i}.spm.spatial.coreg.estimate.eoptions.fwhm     = [7 7];
+                % Ashburner Fix for Better Normalization
+                meanImage = dir([subjectFuncFolder '/run1/mean*']);
+                matlabbatch{i}.spm.util.imcalc.input(1)       = {[meanImage(1).folder '/' meanImage(1).name]};
+                matlabbatch{i}.spm.util.imcalc.output         = 'ashburnerReferenceImage';
+                matlabbatch{i}.spm.util.imcalc.outdir         = {subject_funcfolder};
+                matlabbatch{i}.spm.util.imcalc.expression     = 'i1 + randn(size(i1))*50';
+                matlabbatch{i}.spm.util.imcalc.var            = struct('name', {}, 'value', {});
+                matlabbatch{i}.spm.util.imcalc.options.dmtx   = 0;
+                matlabbatch{i}.spm.util.imcalc.options.mask   = 0;
+                matlabbatch{i}.spm.util.imcalc.options.interp = 1;
+                matlabbatch{i}.spm.util.imcalc.options.dtype  = 4;
             case 4
+                % Run Independent Coregistration Parameters
+                %Ashburner
+                anat_directory = fullfile(directories.anat, csub{:}, 'anat');
+                matlabbatch{i}.spm.spatial.coreg.estimate.ref = {spm_select('ExtFPListRec', anat_directory, wildcards.anat)};
+                matlabbatch{i}.spm.spatial.coreg.estimate.source = {[processDir ...
+                    filesep csub{:} filesep 'func' filesep ...
+                    matlabbatch{i-1}.spm.util.imcalc.output '.nii']};
+                
+                for a=1:length(runs)
+                    images.slicetime{a,1} = [runs{a} '/ar' csub{:} '_task-mp_run-' num2str(a) '_bold.nii'];
+                    if a==5
+                        images.slicetime{a,1} = [processDir filesep csub{:} filesep ...
+                            'func' filesep 'allRegions.nii'];
+                    end
+                end
+                
+                matlabbatch{i}.spm.spatial.coreg.estimate.other = images.slicetime;
+                matlabbatch{i}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
+                matlabbatch{i}.spm.spatial.coreg.estimate.eoptions.sep = [4 2];
+                matlabbatch{i}.spm.spatial.coreg.estimate.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
+                matlabbatch{i}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
+            case 5
                 % Run Independent Segmentation Parameters
-                %i=4;
                 % Find the TPM image on the MATLAB search path
                 spm_segment_image = which('TPM.nii');
-                matlabbatch{i}.spm.spatial.preproc.channel.vols(1)  = cfg_dep...
-                    ('Coregister: Estimate: Coregistered Images', substruct...
-                    ('.','val', '{}',{i-1}, '.','val', '{}',{1}, '.','val', '{}',...
-                    {1}, '.','val', '{}',{1}), substruct('.','cfiles'));
+                matlabbatch{i}.spm.spatial.preproc.channel.vols(1)  = matlabbatch{i-1}.spm.spatial.coreg.estimate.ref;
                 matlabbatch{i}.spm.spatial.preproc.channel.biasreg  = 0.001;
                 matlabbatch{i}.spm.spatial.preproc.channel.biasfwhm = 60;
                 matlabbatch{i}.spm.spatial.preproc.channel.write    = [0 0];
@@ -237,24 +222,28 @@ for csub = subjects % for each subject...
                 matlabbatch{i}.spm.spatial.preproc.warp.fwhm        = 0;
                 matlabbatch{i}.spm.spatial.preproc.warp.samp        = 3;
                 matlabbatch{i}.spm.spatial.preproc.warp.write       = [0 1];
-            case 5
+            case 6
                 % Run Indepenedent Normalization: Normalizaing the Functional Images
-                %i=5;
-                matlabbatch{i}.spm.spatial.normalise.write.subj.def(1) = cfg_dep...
-                    ('Segment: Forward Deformations', substruct('.','val', '{}',{i-1}...
-                    , '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','fordef', '()',{':'}));
+                for a=1:length(images.slicetime)
+                    images.coreg{a,1} = [matlabbatch{i-2}.spm.spatial.coreg.estimate.other{a} ',1'];
+                end
+                
+                images.coreg{a+1,1} = matlabbatch{i-2}.spm.spatial.coreg.estimate.ref{1};
+                matlabbatch{i}.spm.spatial.normalise.write.subj.def = {[anat_directory '/y_' csub{:} '_T1w.nii']};
+                matlabbatch{i}.spm.spatial.normalise.write.subj.resample = images.coreg;
                 matlabbatch{i}.spm.spatial.normalise.write.woptions.bb = [-78 -112 -70
                     78 76 85];
                 matlabbatch{i}.spm.spatial.normalise.write.woptions.vox    = [2 2 2];
                 matlabbatch{i}.spm.spatial.normalise.write.woptions.interp = 4;
                 matlabbatch{i}.spm.spatial.normalise.write.woptions.prefix = 'w';
-            case 6
+            case 7
                 % Run Indepednent Smoothing Parameters
-                %i=6;
-                matlabbatch{i}.spm.spatial.smooth.data(1) = cfg_dep...
-                    ('Normalise: Write: Normalised Images (Subj 1)', substruct...
-                    ('.','val', '{}',{i-1}, '.','val', '{}',{1}, '.','val', '{}',...
-                    {1}, '.','val', '{}',{1}), substruct('()',{1}, '.','files'));
+                for a=1:length(runs)
+                    images.norm{a,1} = strrep(images.coreg{a,1},...
+                        ['ar' csub{:} '_task'],['war' csub{:} '_task']);
+                end
+                
+                matlabbatch{i}.spm.spatial.smooth.data = images.norm;
                 matlabbatch{i}.spm.spatial.smooth.fwhm    = [6 6 6];
                 matlabbatch{i}.spm.spatial.smooth.dtype   = 0;
                 matlabbatch{i}.spm.spatial.smooth.im      = 0;
